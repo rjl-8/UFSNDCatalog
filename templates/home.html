@@ -1,0 +1,11 @@
+{% for job in jobs %}
+<div>
+<p>{{job.name}}</p>
+</div>
+{% endfor %}
+
+{% for recenttool in recenttools %}
+<div>
+<p>{{recenttool.name}} - {{recenttool.date}}</p>
+</div>
+{% endfor %}
