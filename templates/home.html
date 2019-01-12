@@ -1,11 +1,18 @@
-{% for job in jobs %}
-<div>
-<p>{{job.name}}</p>
-</div>
-{% endfor %}
-
-{% for recenttool in recenttools %}
-<div>
-<p>{{recenttool.name}} - {{recenttool.date}}</p>
-</div>
-{% endfor %}
+<table>
+    <tr>
+        <td>
+            {% for job in jobs %}
+            <div>
+            <p><a href='/catalog/{{job.name}}/tools'>{{job.name}}</a></p>
+            </div>
+            {% endfor %}            
+        </td>
+        <td>
+            {% for recenttool in recenttools %}
+            <div>
+            <p><a href='/catalog/{{recenttool.job_name}}/{{recenttool.name}}'>{{recenttool.name}}</a> - {{recenttool.date_added}}</p>
+            </div>
+            {% endfor %}            
+        </td>
+    </tr>
+</table>

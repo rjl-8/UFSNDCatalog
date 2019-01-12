@@ -9,7 +9,10 @@ import httplib2
 from flask import make_response
 import requests
 
-auth = HTTPBasicAuth()
+import json
+
+#??need to import HTTPBasicAuth
+#auth = HTTPBasicAuth()
 app = Flask(__name__)
 
 engine = create_engine('sqlite:///jobtools.db')
@@ -172,62 +175,124 @@ def get_resource():
 
 # Data part of website
 ######################
+prev_loc = ''
+
+# home - list of jobs and most recent tools
 @app.route('/')
 def home():
+    prev_loc = 'home'
     retval = render_template('header.html')
     retval += 'not logged in: list of jobs and the most recently added tools'
     retval += '<br/>logged in: add "Add Item" link'
+
     # get list of jobs
-    #jobs = session.query(Job).all()
-    jobs=[{name:'testjob1'}, {name:'testjob2'}]
+    jobs = session.query(Job).all()
+
     # get list of recently added tools
     #recenttools = session.query(Tool).all()
-    recenttools = [{name:'testtool1',date:'1/1/1901'}]
+    sql = '''\
+    SELECT tool.name, tool.date_added, job.name AS job_name
+    FROM tool
+         JOIN (
+               SELECT job_id, MAX(date_added) max_date_added
+               FROM tool
+               GROUP BY job_id
+              ) last_tool
+            ON tool.job_id = last_tool.job_id
+            AND tool.date_added = max_date_added
+         JOIN job
+            ON tool.job_id = job.id
+    '''
+    recenttools = session.execute(sql)
 
-    retval += render_template('home.html', jobs=jobs, recenttools = recenttools)
+    retval += render_template('home.html', jobs=jobs, recenttools=recenttools)
     retval += render_template('footer.html')
     return retval
 
 
-@app.route('/catalog/<str:job_name>/items')
+# list of tools for a selected job
+@app.route('/catalog/<string:job_name>/tools')
 def getToolsForJob(job_name):
+    prev_loc = 'getToolsForJob'
     retval = render_template('header.html')
     retval += 'not logged in: list of jobs and list of tools for the selected job (highlight selection)'
     retval += '<br/>logged in: ??'
+
+    # get list of jobs
+    jobs = session.query(Job).all()
+
+    # get list of tools for selected job and associated count
+    tools = session.query(Tool).join(Job).filter(Job.name==job_name)
+    toolcount=0
+    for tool in tools:
+        toolcount += 1
+
+    retval += render_template('tools.html', toolcount=toolcount, job_name=job_name, jobs=jobs, tools=tools)
     retval += render_template('footer.html')
     return retval
 
 
-@app.route('/catalog/<str:job_name>/<str:tool_name>')
+# description for a selected tool
+@app.route('/catalog/<string:job_name>/<string:tool_name>')
 def getToolDescription(job_name, tool_name):
+    prev_loc = 'getToolDescription'
     retval = render_template('header.html')
     retval += 'not logged in: just a description of the tool'
     retval += '<br/>logged in: add edit/delete links'
+
+    # get info for selected tool
+    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name)
+
+    retval += render_template('tooldesc.html', tool=tool, job_name=job_name)
     retval += render_template('footer.html')
     return retval
 
 
-@app.route('/catalog/<str:tool_name>/edit', methods=['GET', 'POST'])
-def getToolEdit(tool_name):
-    retval = render_template('header.html')
-    retval += 'not logged in: deny access message - provide link to login'
-    retval += '<br/>logged in: edit tool form'
-    retval += render_template('footer.html')
-    return retval
+# form to edit tool and the processing thereof
+@app.route('/catalog/<string:job_name>/<string:tool_name>/edit', methods=['GET', 'POST'])
+def getToolEdit(job_name, tool_name):
+    # get info for selected tool
+    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name)
+
+    if request.method == 'POST':
+        if request.form['inp_tool_name']:
+            tool.name = request.form['inp_tool_name']
+        if request.form['inp_tool_desc']:
+            tool.description = request.form['inp_tool_desc']
+        if request.form['sel_job_name']:
+            tool.job_id = session.query(Job).filter(Job.name==request.form['sel_job_name']).one().id
+
+        return redirect(url_for(prev_loc))
+    else:
+        retval = render_template('header.html')
+        retval += 'not logged in: deny access message - provide link to login'
+        retval += '<br/>logged in: edit tool form'
+
+        # get list of jobs
+        jobs = session.query(Job).all()
+
+        retval += render_template('tooledit.html', tool=tool, jobs=jobs, job_name=job_name)
+        retval += render_template('footer.html')
+        return retval
+        
+
+# form to delete a tool and the processing thereof
+@app.route('/catalog/<string:tool_name>/delete', methods=['GET', 'POST'])
+def getToolDelete(tool_name):
+    if request.method == 'POST':
+        return redirect(url_for(prev_loc))
+    else:
+        retval = render_template('header.html')
+        retval += 'not logged in: deny access message - provide link to login'
+        retval += '<br/>logged in: delete tool confirmation form'
+        retval += render_template('footer.html')
+        return retval
 
 
-@app.route('/catalog/<str:tool_name>/delete', methods=['GET', 'POST'])
-def getToolsForJob(tool_name):
-    retval = render_template('header.html')
-    retval += 'not logged in: deny access message - provide link to login'
-    retval += '<br/>logged in: delete tool confirmation form'
-    retval += render_template('footer.html')
-    return retval
-
-
+# json service for db dump
 @app.route('/catalog.json')
 def getJson():
-    retval += 'not logged in: json dump of database'
+    retval = 'not logged in: json dump of database'
     retval += '<br/>logged in: same'
     jobs = session.query(Job).all()
     retval += jsonify(Jobs=[job.serialize for job in jobs])
@@ -246,6 +311,8 @@ def restaurantMenu(restaurant_id):
     items = session.query(MenuItem).filter_by(restaurant_id=restaurant.id)
     return render_template('menu.html', restaurant=restaurant, items=items)
 
+    # example of raw sql with parameter
+    #result = session.execute('SELECT * FROM tool WHERE my_column = :val', {'val': 5})
 
 if __name__ == '__main__':
     app.debug = True

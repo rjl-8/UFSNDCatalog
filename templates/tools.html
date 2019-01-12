@@ -1,47 +1,19 @@
-<html>
-
-
-
-<body>
-
-
-
-<h1>{{restaurant.name}}</h1>
-
-
-
-
-
-{% for i in items %}
-
-
-
-<div>
-
-
-
-<p>{{i.name}}</p>
-
-
-
-<p>{{i.description}}</p>
-
-
-
-<p> {{i.price}} </p>
-
-
-
-</div>
-
-
-
-
-
-{% endfor %}
-
-</body>
-
-
-
-</html>
+<table>
+    <tr>
+        <td>
+            {% for job in jobs %}
+            <div>
+            <p><a href='/catalog/{{job.name}}/tools'>{{job.name}}</a></p>
+            </div>
+            {% endfor %}            
+        </td>
+        <td>
+            {{job_name_text}} Tools ({{toolcount}} tools)
+            {% for tool in tools %}
+            <div>
+            <p><a href='/catalog/{{job_name}}/{{tool.name}}'>{{tool.name}}</a></p>
+            </div>
+            {% endfor %}            
+        </td>
+    </tr>
+</table>

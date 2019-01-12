@@ -1,13 +1,18 @@
 <html>
 <body>
-<table>
+<table align-self='center' width='90%'>
     <tr>
-        <td align='right'>
+        <td>
+            <div align-self='left'>
+                <a href='/'>Home</a>
+            </div>
+            <div align-self='right'>
             {% if g.user %}
                 <button>Logout</button>
             {% else %}
                 <button>Login</button>
             {% endif %}
+            </div>
         </td>
     </tr>
     <tr>

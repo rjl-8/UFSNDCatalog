@@ -1,47 +1,25 @@
-<html>
+<div>Edit Tool</div>
 
+<br/>
 
-
-<body>
-
-
-
-<h1>{{restaurant.name}}</h1>
-
-
-
-
-
-{% for i in items %}
-
-
-
-<div>
-
-
-
-<p>{{i.name}}</p>
-
-
-
-<p>{{i.description}}</p>
-
-
-
-<p> {{i.price}} </p>
-
-
-
-</div>
-
-
-
-
-
-{% endfor %}
-
-</body>
-
-
-
-</html>
+<h3>Tool</h3>
+<br/>
+<input type='text' id='inp_tool_name' value='{{tool.name}}'>
+<br/>
+<h3>Description</h3>
+<br/>
+<input type='text' id='inp_tool_desc' value='{{tool.description}}'>
+<br/>
+<h3>Job</h3>
+<br/>
+<select id='sel_job_name'>
+{%for job in jobs%}
+    {%if job.name == job_name%}
+        <option selected value='{{job.name}}'>{{job.name}}</option>
+    {%else%}
+        <option value='{{job.name}}'>{{job.name}}</option>
+    {%endif%}
+{%endfor%}
+</select>
+<a href=''>Save</a>
+<a href=''>Cancel</a>
