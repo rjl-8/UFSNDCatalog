@@ -1,14 +1,15 @@
 <table>
     <tr>
-        <td>
+        <td style='vertical-align: top'>
+            <h2>Jobs</h2>
             {% for job in jobs %}
             <div>
             <p><a href='/catalog/{{job.name}}/tools'>{{job.name}}</a></p>
             </div>
             {% endfor %}            
         </td>
-        <td>
-            {{job_name_text}} Tools ({{toolcount}} tools)
+        <td  style='vertical-align: top'>
+            <h2>{{job_name_text}} Tools ({{toolcount}} tools)</h2>
             {% for tool in tools %}
             <div>
             <p><a href='/catalog/{{job_name}}/{{tool.name}}'>{{tool.name}}</a></p>

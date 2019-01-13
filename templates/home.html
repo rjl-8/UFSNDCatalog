@@ -1,17 +1,29 @@
-<table>
+<table border=1>
     <tr>
-        <td>
+        <td colspan=2 style="text-align:right">
+            {%if 1==1%}
+                <a href='/catalog/newtool'>Add Item</a>
+            {%endif%}
+        </td>
+    </tr>
+    <tr>
+        <td style='vertical-align: top'>
+            <h2>Jobs</h2>
             {% for job in jobs %}
-            <div>
-            <p><a href='/catalog/{{job.name}}/tools'>{{job.name}}</a></p>
-            </div>
+                <div>
+                    <p><a href='/catalog/{{job.name}}/tools'>{{job.name}}</a></p>
+                </div>
             {% endfor %}            
         </td>
-        <td>
+        <td style='vertical-align: top'>
+            <h2>Tools Most Recently Added</h2>
             {% for recenttool in recenttools %}
-            <div>
-            <p><a href='/catalog/{{recenttool.job_name}}/{{recenttool.name}}'>{{recenttool.name}}</a> - {{recenttool.date_added}}</p>
-            </div>
+                <div>
+                    <p>
+                        <a href='/catalog/{{recenttool.job_name}}/{{recenttool.name}}'>{{recenttool.name}}</a> 
+                        - <span class='date'>{{recenttool.date_added}}</span>
+                    </p>
+                </div>
             {% endfor %}            
         </td>
     </tr>

@@ -1,47 +1,9 @@
-<html>
+<h2>Delete Tool?</h2>
 
+<br/>
 
-
-<body>
-
-
-
-<h1>{{restaurant.name}}</h1>
-
-
-
-
-
-{% for i in items %}
-
-
-
-<div>
-
-
-
-<p>{{i.name}}</p>
-
-
-
-<p>{{i.description}}</p>
-
-
-
-<p> {{i.price}} </p>
-
-
-
-</div>
-
-
-
-
-
-{% endfor %}
-
-</body>
-
-
-
-</html>
+<form method='post'>
+    <h3>Are you sure you want to delete the tool "{{tool.name}}" for the job "{{job_name}}"?</h3>
+    <input type='submit' value='Delete?'>
+    <a href='{{url_for("home")}}'>Cancel</a>
+</form>

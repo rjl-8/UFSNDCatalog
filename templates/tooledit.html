@@ -4,15 +4,16 @@
 
 <h3>Tool</h3>
 <br/>
-<input type='text' id='inp_tool_name' value='{{tool.name}}'>
+<form method='post'>
+<input type='text' name='inp_tool_name' value='{{tool.name}}'>
 <br/>
 <h3>Description</h3>
 <br/>
-<input type='text' id='inp_tool_desc' value='{{tool.description}}'>
+<input type='text' name='inp_tool_desc' value='{{tool.description}}'>
 <br/>
 <h3>Job</h3>
 <br/>
-<select id='sel_job_name'>
+<select name='sel_job_name'>
 {%for job in jobs%}
     {%if job.name == job_name%}
         <option selected value='{{job.name}}'>{{job.name}}</option>
@@ -21,5 +22,6 @@
     {%endif%}
 {%endfor%}
 </select>
-<a href=''>Save</a>
-<a href=''>Cancel</a>
+<input type='submit' value='Save'>
+<a href='{{url_for("home")}}'>Cancel</a>
+</form>

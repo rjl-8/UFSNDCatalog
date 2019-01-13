@@ -1,20 +1,35 @@
 <html>
+    <head>
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+    </head>
 <body>
 <table align-self='center' width='90%'>
     <tr>
         <td>
-            <div align-self='left'>
+            <span style='align-self:left'>
                 <a href='/'>Home</a>
-            </div>
-            <div align-self='right'>
+            </span>
+            <span style='align-self:right'>
             {% if g.user %}
                 <button>Logout</button>
             {% else %}
                 <button>Login</button>
             {% endif %}
-            </div>
+            </span>
         </td>
     </tr>
     <tr>
         <td>
+            <div class = 'flash'>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    
+                    <ul>
+                    {% for message in messages %}
+                        <li> <strong> {{ message }} </strong> </li>
+                    {% endfor %}
+                    </ul>
+                    {% endif %}
+                {% endwith %}
+          </div>
 <!--content here-->

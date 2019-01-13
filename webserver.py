@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, g
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Job, Tool
+from database_setup import Base, Job, Tool, User
+
+from flask import session as login_session
 
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
@@ -9,13 +11,20 @@ import httplib2
 from flask import make_response
 import requests
 
+import random
+import string
+
 import json
+
+from requests.auth import HTTPBasicAuth
 
 #??need to import HTTPBasicAuth
 #auth = HTTPBasicAuth()
 app = Flask(__name__)
 
-engine = create_engine('sqlite:///jobtools.db')
+#engine = create_engine('sqlite:///jobtools.db')
+engine = create_engine('postgresql://catalog:Passw0rd@localhost:5432/catalog')
+
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -27,8 +36,7 @@ CLIENT_ID = json.loads(
 
 # oAuth and User parts of website
 #################################
-a='''
-@auth.verify_password
+#@auth.verify_password
 def verify_password(username_or_token, password):
     #Try to see if it's a token first
     user_id = User.verify_auth_token(username_or_token)
@@ -131,7 +139,7 @@ def login(provider):
         return 'Unrecoginized Provider'
 
 @app.route('/token')
-@auth.login_required
+#@auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii')})
@@ -165,22 +173,19 @@ def get_user(id):
     return jsonify({'username': user.username})
 
 @app.route('/api/resource')
-@auth.login_required
+#@auth.login_required
 def get_resource():
     return jsonify({ 'data': 'Hello, %s!' % g.user.username })
-'''
 # end oAuth and User parts of website
 #####################################
 
 
 # Data part of website
 ######################
-prev_loc = ''
 
 # home - list of jobs and most recent tools
 @app.route('/')
 def home():
-    prev_loc = 'home'
     retval = render_template('header.html')
     retval += 'not logged in: list of jobs and the most recently added tools'
     retval += '<br/>logged in: add "Add Item" link'
@@ -205,7 +210,7 @@ def home():
     '''
     recenttools = session.execute(sql)
 
-    retval += render_template('home.html', jobs=jobs, recenttools=recenttools)
+    retval += render_template('home.html', **locals())
     retval += render_template('footer.html')
     return retval
 
@@ -213,7 +218,6 @@ def home():
 # list of tools for a selected job
 @app.route('/catalog/<string:job_name>/tools')
 def getToolsForJob(job_name):
-    prev_loc = 'getToolsForJob'
     retval = render_template('header.html')
     retval += 'not logged in: list of jobs and list of tools for the selected job (highlight selection)'
     retval += '<br/>logged in: ??'
@@ -227,7 +231,7 @@ def getToolsForJob(job_name):
     for tool in tools:
         toolcount += 1
 
-    retval += render_template('tools.html', toolcount=toolcount, job_name=job_name, jobs=jobs, tools=tools)
+    retval += render_template('tools.html', **locals())
     retval += render_template('footer.html')
     return retval
 
@@ -235,7 +239,6 @@ def getToolsForJob(job_name):
 # description for a selected tool
 @app.route('/catalog/<string:job_name>/<string:tool_name>')
 def getToolDescription(job_name, tool_name):
-    prev_loc = 'getToolDescription'
     retval = render_template('header.html')
     retval += 'not logged in: just a description of the tool'
     retval += '<br/>logged in: add edit/delete links'
@@ -243,26 +246,67 @@ def getToolDescription(job_name, tool_name):
     # get info for selected tool
     tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name)
 
-    retval += render_template('tooldesc.html', tool=tool, job_name=job_name)
+    retval += render_template('tooldesc.html', **locals())
     retval += render_template('footer.html')
     return retval
+
+
+# Create a new tool
+@app.route('/catalog/newtool/', methods=['GET', 'POST'])
+def newTool():
+    if request.method == 'POST':
+        print 'inp_tool_name = ' + request.form['inp_tool_name']
+        print 'inp_tool_desc = ' + request.form['inp_tool_desc']
+        print 'sel_job_name = ' + request.form['sel_job_name']
+        if request.form['inp_tool_name'] and request.form['inp_tool_desc'] and request.form['sel_job_name']:
+            newTool = Tool(name=request.form['inp_tool_name'], 
+                           description=request.form['inp_tool_desc'],
+                           job_id=session.query(Job).filter(Job.name==request.form['sel_job_name']).one().id,
+                           owner='g.user_id')
+            session.add(newTool)
+            session.commit()
+            flash('New tool added!')
+        else:
+            flash('ERROR: You must input a name and description and select a job for the tool')
+
+        return redirect(url_for('home'))
+    else:
+        retval = render_template('header.html')
+        retval += 'not logged in: deny access message - provide link to login'
+        retval += '<br/>logged in: edit tool form'
+
+        # get empty tool object to be able to reuse tooledit.html
+        tool = session.query(Tool).filter(Tool.name=='')
+
+        # get list of jobs
+        jobs = session.query(Job).all()
+
+        retval += render_template('tooledit.html', tool=tool, jobs=jobs, job_name='')
+        retval += render_template('footer.html')
+        return retval
 
 
 # form to edit tool and the processing thereof
 @app.route('/catalog/<string:job_name>/<string:tool_name>/edit', methods=['GET', 'POST'])
 def getToolEdit(job_name, tool_name):
     # get info for selected tool
-    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name)
-
+    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name).one()
     if request.method == 'POST':
         if request.form['inp_tool_name']:
+            print 'updated name'
             tool.name = request.form['inp_tool_name']
         if request.form['inp_tool_desc']:
+            print 'updated description'
             tool.description = request.form['inp_tool_desc']
         if request.form['sel_job_name']:
+            print 'update job'
             tool.job_id = session.query(Job).filter(Job.name==request.form['sel_job_name']).one().id
 
-        return redirect(url_for(prev_loc))
+#        session.add(tool)
+#        session.commit()
+
+        flash('Tool successfully edited!')
+        return redirect(url_for('home'))
     else:
         retval = render_template('header.html')
         retval += 'not logged in: deny access message - provide link to login'
@@ -270,21 +314,28 @@ def getToolEdit(job_name, tool_name):
 
         # get list of jobs
         jobs = session.query(Job).all()
-
-        retval += render_template('tooledit.html', tool=tool, jobs=jobs, job_name=job_name)
+        retval += render_template('tooledit.html', **locals())
         retval += render_template('footer.html')
         return retval
         
 
 # form to delete a tool and the processing thereof
-@app.route('/catalog/<string:tool_name>/delete', methods=['GET', 'POST'])
-def getToolDelete(tool_name):
+@app.route('/catalog/<string:job_name>/<string:tool_name>/delete', methods=['GET', 'POST'])
+def getToolDelete(job_name, tool_name):
+    # get info for selected tool
+    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name).one()
+
     if request.method == 'POST':
-        return redirect(url_for(prev_loc))
+        # do delete
+        session.delete(tool)
+        session.commit()
+        flash('You nasty devil you, deleting data!')
+        return redirect(url_for('home'))
     else:
         retval = render_template('header.html')
         retval += 'not logged in: deny access message - provide link to login'
         retval += '<br/>logged in: delete tool confirmation form'
+        retval += render_template('tooldelete.html', **locals())
         retval += render_template('footer.html')
         return retval
 
@@ -315,5 +366,6 @@ def restaurantMenu(restaurant_id):
     #result = session.execute('SELECT * FROM tool WHERE my_column = :val', {'val': 5})
 
 if __name__ == '__main__':
+    app.secret_key = 'super_secret_key'
     app.debug = True
     app.run(host='0.0.0.0', port=5000)
