@@ -13,7 +13,7 @@
             {% if g.user %}
                 <button>Logout</button>
             {% else %}
-                <button>Login</button>
+                <a href='{{url_for("showLogin")}}'>Login</a>
             {% endif %}
             </span>
         </td>
