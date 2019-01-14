@@ -1,27 +1,30 @@
 <div>Edit Tool</div>
 
 <br/>
-
-<h3>Tool</h3>
-<br/>
-<form method='post'>
-<input type='text' name='inp_tool_name' value='{{tool.name}}'>
-<br/>
-<h3>Description</h3>
-<br/>
-<input type='text' name='inp_tool_desc' value='{{tool.description}}'>
-<br/>
-<h3>Job</h3>
-<br/>
-<select name='sel_job_name'>
-{%for job in jobs%}
-    {%if job.name == job_name%}
-        <option selected value='{{job.name}}'>{{job.name}}</option>
-    {%else%}
-        <option value='{{job.name}}'>{{job.name}}</option>
-    {%endif%}
-{%endfor%}
-</select>
-<input type='submit' value='Save'>
-<a href='{{url_for("home")}}'>Cancel</a>
-</form>
+{% if logged_in %}
+    <h3>Tool</h3>
+    <br/>
+    <form method='post'>
+        <input type='text' name='inp_tool_name' value='{{tool.name}}'>
+        <br/>
+        <h3>Description</h3>
+        <br/>
+        <input type='text' name='inp_tool_desc' value='{{tool.description}}'>
+        <br/>
+        <h3>Job</h3>
+        <br/>
+        <select name='sel_job_name'>
+        {%for job in jobs%}
+            {%if job.name == job_name%}
+                <option selected value='{{job.name}}'>{{job.name}}</option>
+            {%else%}
+                <option value='{{job.name}}'>{{job.name}}</option>
+            {%endif%}
+        {%endfor%}
+        </select>
+        <input type='submit' value='Save'>
+        <a href='{{url_for("home")}}'>Cancel</a>
+    </form>
+{% else %}
+    <h2>You need to login to get access to this functionality.</h2>
+{% endif %}

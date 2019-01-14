@@ -1,6 +1,19 @@
 <html>
     <head>
         <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+        {% if provider == 'google' %}
+            <script src="https://apis.google.com/js/platform.js" async defer></script>
+            <script>
+            function signOut() {
+                alert('here1');
+                var auth2 = gapi.auth2.getAuthInstance();
+                auth2.signOut().then(function () {
+                    alert('here2');
+                console.log('User signed out.');
+                });
+            }
+            </script>
+        {% endif %}
     </head>
 <body>
 <table align-self='center' width='90%'>
@@ -10,11 +23,12 @@
                 <a href='/'>Home</a>
             </span>
             <span style='align-self:right'>
-            {% if loggedin %}
-                {% if fb %}
+            {% if logged_in %}
+                {% if provider == 'facebook' %}
                     <a href='{{url_for("fdisconnect")}}'>Logout</a>
-                {% else %}
+                {% elif provider == 'google' %}
                     <a href='{{url_for("gdisconnect")}}'>Logout</a>
+<!--                    <a href='#' onclick='signOut()'>Logout</a>-->
                 {% endif %}
             {% else %}
                 <a href='{{url_for("showLogin")}}'>Login</a>

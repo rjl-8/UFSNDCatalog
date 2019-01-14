@@ -17,7 +17,7 @@ vagrant ssh
 sudo passwd postgres
 su postgres
 psql
-create role catalog with login password '******';
+create role catalog with login password 'Passw0rd';
 create database catalog with owner=catalog;
 \q
 ```
@@ -40,7 +40,7 @@ python database_setup.py
 ```
 then run the python file for the webserver:
 ```
-python webserver.py
+python application.py
 ```
 
 and then browse to http://localhost:5000/

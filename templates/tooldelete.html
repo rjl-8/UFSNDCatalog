@@ -2,8 +2,12 @@
 
 <br/>
 
-<form method='post'>
-    <h3>Are you sure you want to delete the tool "{{tool.name}}" for the job "{{job_name}}"?</h3>
-    <input type='submit' value='Delete?'>
-    <a href='{{url_for("home")}}'>Cancel</a>
-</form>
+{% if logged_in %}
+    <form method='post'>
+        <h3>Are you sure you want to delete the tool "{{tool.name}}" for the job "{{job_name}}"?</h3>
+        <input type='submit' value='Delete?'>
+        <a href='{{url_for("home")}}'>Cancel</a>
+    </form>
+{% else %}
+    <h2>You need to login to get access to this functionality.</h2>
+{% endif %}
