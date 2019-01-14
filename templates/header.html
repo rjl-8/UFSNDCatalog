@@ -10,8 +10,12 @@
                 <a href='/'>Home</a>
             </span>
             <span style='align-self:right'>
-            {% if g.user %}
-                <button>Logout</button>
+            {% if loggedin %}
+                {% if fb %}
+                    <a href='{{url_for("fdisconnect")}}'>Logout</a>
+                {% else %}
+                    <a href='{{url_for("gdisconnect")}}'>Logout</a>
+                {% endif %}
             {% else %}
                 <a href='{{url_for("showLogin")}}'>Login</a>
             {% endif %}
