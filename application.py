@@ -1,5 +1,6 @@
 # web tools
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, g
+from flask import Flask, render_template, request
+from flask import redirect, url_for, jsonify, flash
 from flask import session as login_session
 from flask import make_response
 
