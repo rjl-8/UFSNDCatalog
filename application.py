@@ -200,15 +200,17 @@ def getHeader():
 
     provider = login_session.get('provider')
 
+    username = login_session.get('username')
+
     html = render_template('header.html', **locals())
 
-    return logged_in, provider, html
+    return logged_in, provider, username, html
 
 
 # home - list of jobs and most recent tools
 @app.route('/')
 def home():
-    logged_in, provider, retval = getHeader()
+    logged_in, provider, username, retval = getHeader()
 
     # get list of jobs
     jobs = session.query(Job).all()
@@ -237,7 +239,7 @@ def home():
 # list of tools for a selected job
 @app.route('/catalog/<string:job_name>/tools')
 def getToolsForJob(job_name):
-    logged_in, provider, retval = getHeader()
+    logged_in, provider, username, retval = getHeader()
 
     # get list of jobs
     jobs = session.query(Job).all()
@@ -256,7 +258,7 @@ def getToolsForJob(job_name):
 # description for a selected tool
 @app.route('/catalog/<string:job_name>/<string:tool_name>')
 def getToolDescription(job_name, tool_name):
-    logged_in, provider, retval = getHeader()
+    logged_in, provider, username, retval = getHeader()
 
     # get info for selected tool
     tool = session.query(Tool)\
@@ -296,7 +298,7 @@ def newTool():
 
         return redirect(url_for('home'))
     else:
-        logged_in, provider, retval = getHeader()
+        logged_in, provider, username, retval = getHeader()
 
         # get empty tool object to be able to reuse tooledit.html
         tool = session.query(Tool).filter(Tool.name == '')
@@ -338,7 +340,7 @@ def getToolEdit(job_name, tool_name):
         flash('Tool successfully edited!')
         return redirect(url_for('home'))
     else:
-        logged_in, provider, retval = getHeader()
+        logged_in, provider, username, retval = getHeader()
 
         # get list of jobs
         jobs = session.query(Job).all()
@@ -365,7 +367,7 @@ def getToolDelete(job_name, tool_name):
         flash('You nasty devil you, deleting data!')
         return redirect(url_for('home'))
     else:
-        logged_in, provider, retval = getHeader()
+        logged_in, provider, username, retval = getHeader()
         retval += render_template('tooldelete.html', **locals())
         retval += render_template('footer.html')
         return retval
