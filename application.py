@@ -33,7 +33,7 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-#id for oauth
+# id for oauth
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Repair Job Tools Application"
@@ -104,8 +104,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -132,19 +132,16 @@ def gconnect():
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
 
-    output = ''
-    output += '<h1>Welcome, '
-    output += login_session['username']
-    output += '!</h1>'
-    output += '<img src="'
-    output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    retval = render_template('loginsuccess.html',
+                    username=login_session['username'],
+                    picture=login_session['picture'])
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
-    return output
+    return retval
 
 
-# disconnect for google - Revoke a current user's token and reset their login_session
+# disconnect for google
+# Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
     # Only disconnect a connected user.
@@ -187,9 +184,9 @@ def getUserID(email):
         return user.id
     except:
         return None
-
 # end oAuth and User parts of website
 #####################################
+
 
 # Data part of website
 ######################
@@ -217,7 +214,6 @@ def home():
     jobs = session.query(Job).all()
 
     # get list of recently added tools
-    #recenttools = session.query(Tool).all()
     sql = '''\
     SELECT tool.name, tool.date_added, job.name AS job_name
     FROM tool
@@ -247,8 +243,8 @@ def getToolsForJob(job_name):
     jobs = session.query(Job).all()
 
     # get list of tools for selected job and associated count
-    tools = session.query(Tool).join(Job).filter(Job.name==job_name)
-    toolcount=0
+    tools = session.query(Tool).join(Job).filter(Job.name == job_name)
+    toolcount = 0
     for tool in tools:
         toolcount += 1
 
@@ -263,7 +259,10 @@ def getToolDescription(job_name, tool_name):
     logged_in, provider, retval = getHeader()
 
     # get info for selected tool
-    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name)
+    tool = session.query(Tool)\
+        .join(Job)\
+        .filter(Job.name == job_name)\
+        .filter(Tool.name == tool_name)
 
     retval += render_template('tooldesc.html', **locals())
     retval += render_template('footer.html')
@@ -277,37 +276,52 @@ def newTool():
         print 'inp_tool_name = ' + request.form['inp_tool_name']
         print 'inp_tool_desc = ' + request.form['inp_tool_desc']
         print 'sel_job_name = ' + request.form['sel_job_name']
-        if request.form['inp_tool_name'] and request.form['inp_tool_desc'] and request.form['sel_job_name']:
-            newTool = Tool(name=request.form['inp_tool_name'], 
-                           description=request.form['inp_tool_desc'],
-                           job_id=session.query(Job).filter(Job.name==request.form['sel_job_name']).one().id,
-                           owner='g.user_id')
+        if request.form['inp_tool_name']\
+            and request.form['inp_tool_desc']\
+            and request.form['sel_job_name']:
+            newTool = Tool()
+            newTool.name = request.form['inp_tool_name']
+            newTool.description = request.form['inp_tool_desc']
+            newTool.job_id = session.query(Job)\
+                .filter(Job.name == request.form['sel_job_name'])\
+                .one()\
+                .id
+            newTool.owner = login_session['username'])
             session.add(newTool)
             session.commit()
             flash('New tool added!')
         else:
-            flash('ERROR: You must input a name and description and select a job for the tool')
+            msg = 'ERROR: You must input a name and '
+            msg += 'description and select a job for the tool'
+            flash(msg)
 
         return redirect(url_for('home'))
     else:
         logged_in, provider, retval = getHeader()
 
         # get empty tool object to be able to reuse tooledit.html
-        tool = session.query(Tool).filter(Tool.name=='')
+        tool = session.query(Tool).filter(Tool.name == '')
 
         # get list of jobs
         jobs = session.query(Job).all()
 
-        retval += render_template('tooledit.html', tool=tool, jobs=jobs, job_name='')
+        job_name = ''
+        retval += render_template('tooledit.html', **locals())
         retval += render_template('footer.html')
         return retval
 
 
 # form to edit tool and the processing thereof
-@app.route('/catalog/<string:job_name>/<string:tool_name>/edit', methods=['GET', 'POST'])
+@app.route('/catalog/<string:job_name>/<string:tool_name>/edit',
+    methods=['GET', 'POST'])
 def getToolEdit(job_name, tool_name):
     # get info for selected tool
-    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name).one()
+    tool = session.query(Tool)\
+        .join(Job)\
+        .filter(Job.name == job_name)\
+        .filter(Tool.name == tool_name)\
+        .one()
+
     if request.method == 'POST':
         if request.form['inp_tool_name']:
             print 'updated name'
@@ -317,7 +331,10 @@ def getToolEdit(job_name, tool_name):
             tool.description = request.form['inp_tool_desc']
         if request.form['sel_job_name']:
             print 'update job'
-            tool.job_id = session.query(Job).filter(Job.name==request.form['sel_job_name']).one().id
+            tool.job_id = session.query(Job)\
+                .filter(Job.name == request.form['sel_job_name'])\
+                .one()\
+                .id
 
         flash('Tool successfully edited!')
         return redirect(url_for('home'))
@@ -329,13 +346,18 @@ def getToolEdit(job_name, tool_name):
         retval += render_template('tooledit.html', **locals())
         retval += render_template('footer.html')
         return retval
-        
+
 
 # form to delete a tool and the processing thereof
-@app.route('/catalog/<string:job_name>/<string:tool_name>/delete', methods=['GET', 'POST'])
+@app.route('/catalog/<string:job_name>/<string:tool_name>/delete',
+    methods=['GET', 'POST'])
 def getToolDelete(job_name, tool_name):
     # get info for selected tool
-    tool = session.query(Tool).join(Job).filter(Job.name==job_name).filter(Tool.name==tool_name).one()
+    tool = session.query(Tool)\
+        .join(Job)\
+        .filter(Job.name == job_name)\
+        .filter(Tool.name == tool_name)\
+        .one()
 
     if request.method == 'POST':
         # do delete
