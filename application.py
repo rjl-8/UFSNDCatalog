@@ -133,8 +133,8 @@ def gconnect():
     login_session['user_id'] = user_id
 
     retval = render_template('loginsuccess.html',
-                    username=login_session['username'],
-                    picture=login_session['picture'])
+                             username=login_session['username'],
+                             picture=login_session['picture'])
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return retval
@@ -276,9 +276,8 @@ def newTool():
         print 'inp_tool_name = ' + request.form['inp_tool_name']
         print 'inp_tool_desc = ' + request.form['inp_tool_desc']
         print 'sel_job_name = ' + request.form['sel_job_name']
-        if request.form['inp_tool_name']\
-            and request.form['inp_tool_desc']\
-            and request.form['sel_job_name']:
+        if request.form['inp_tool_name'] and\
+           request.form['inp_tool_desc'] and request.form['sel_job_name']:
             newTool = Tool()
             newTool.name = request.form['inp_tool_name']
             newTool.description = request.form['inp_tool_desc']
@@ -286,7 +285,7 @@ def newTool():
                 .filter(Job.name == request.form['sel_job_name'])\
                 .one()\
                 .id
-            newTool.owner = login_session['username'])
+            newTool.owner = login_session['username']
             session.add(newTool)
             session.commit()
             flash('New tool added!')
@@ -313,7 +312,7 @@ def newTool():
 
 # form to edit tool and the processing thereof
 @app.route('/catalog/<string:job_name>/<string:tool_name>/edit',
-    methods=['GET', 'POST'])
+           methods=['GET', 'POST'])
 def getToolEdit(job_name, tool_name):
     # get info for selected tool
     tool = session.query(Tool)\
@@ -350,7 +349,7 @@ def getToolEdit(job_name, tool_name):
 
 # form to delete a tool and the processing thereof
 @app.route('/catalog/<string:job_name>/<string:tool_name>/delete',
-    methods=['GET', 'POST'])
+           methods=['GET', 'POST'])
 def getToolDelete(job_name, tool_name):
     # get info for selected tool
     tool = session.query(Tool)\
