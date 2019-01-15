@@ -2,7 +2,7 @@
 <br/>
 <h2>Description:</h2> <p>{{tool[0].description}}</p>
 
-{% if logged_in %}
+{% if logged_in and username == tool[0].owner %}
 <a href='/catalog/{{job_name}}/{{tool[0].name}}/edit'>Edit</a>
 <a href='/catalog/{{job_name}}/{{tool[0].name}}/delete'>Delete</a>
 {% endif %}
