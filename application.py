@@ -375,21 +375,33 @@ def getToolDelete(job_name, tool_name):
 
 # json services for db dumps
 @app.route('/catalog/jobs/json')
+<<<<<<< HEAD
 def getAllJobsJson():
+=======
+def getJobsJson():
+>>>>>>> 0b8bd4244dc84af4a2682e9e21b12bd854be82bd
     jobs = session.query(Job).all()
     retval = jsonify(Jobs=[job.serialize for job in jobs])
     return retval
 
 
 @app.route('/catalog/tools/json')
+<<<<<<< HEAD
 def getAllToolsJson():
+=======
+def getToolsJson():
+>>>>>>> 0b8bd4244dc84af4a2682e9e21b12bd854be82bd
     tools = session.query(Tool).all()
     retval = jsonify(Tools=[tool.serialize for tool in tools])
     return retval
 
 
 @app.route('/catalog/<string:job_name>/json')
+<<<<<<< HEAD
 def getToolsJson(job_name):
+=======
+def getToolsJson():
+>>>>>>> 0b8bd4244dc84af4a2682e9e21b12bd854be82bd
     # get info for selected tools
     tools = session.query(Tool)\
         .join(Job)\
@@ -400,7 +412,11 @@ def getToolsJson(job_name):
 
 
 @app.route('/catalog/<string:job_name>/<string:tool_name>/json')
+<<<<<<< HEAD
 def getToolJson(job_name, tool_name):
+=======
+def getToolsJson():
+>>>>>>> 0b8bd4244dc84af4a2682e9e21b12bd854be82bd
     # get info for selected tools
     tools = session.query(Tool)\
         .join(Job)\
