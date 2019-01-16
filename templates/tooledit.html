@@ -1,4 +1,10 @@
-<div>Edit Tool</div>
+<h1>
+    {% if tool.name %}
+        Edit Tool
+    {% else %}
+        New Tool
+    {% endif %}
+</h1>
 
 <br/>
 {% if logged_in %}
