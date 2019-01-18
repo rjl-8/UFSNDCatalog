@@ -208,7 +208,7 @@ def getHeader():
 
 
 # home - list of jobs and most recent tools
-@app.route('/')
+@app.route('/catalog')
 def home():
     logged_in, provider, username, retval = getHeader()
 
