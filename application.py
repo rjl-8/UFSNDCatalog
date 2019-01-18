@@ -322,6 +322,10 @@ def getToolEdit(job_name, tool_name):
         .filter(Job.name == job_name)\
         .filter(Tool.name == tool_name)\
         .one()
+    
+    if login_session['username'] != tool.owner:
+        flash('You do not own that tool entry so you cannot edit it!')
+        return redirect(url_for('home'))
 
     if request.method == 'POST':
         if request.form['inp_tool_name']:
@@ -359,6 +363,10 @@ def getToolDelete(job_name, tool_name):
         .filter(Job.name == job_name)\
         .filter(Tool.name == tool_name)\
         .one()
+
+    if login_session['username'] != tool.owner:
+        flash('You do not own that tool entry so you cannot edit it!')
+        return redirect(url_for('home'))
 
     if request.method == 'POST':
         # do delete
