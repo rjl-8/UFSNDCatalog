@@ -34,8 +34,12 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 # id for oauth
-CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+import os
+PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
+json_url = os.path.join(PROJECT_ROOT, 'client_secrets.json')
+CLIENT_ID = json.load(open(json_url))['web']['client_id']
+#CLIENT_ID = json.loads(
+#    open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Repair Job Tools Application"
 
 
