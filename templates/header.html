@@ -5,10 +5,8 @@
             <script src="https://apis.google.com/js/platform.js" async defer></script>
             <script>
             function signOut() {
-                alert('here1');
                 var auth2 = gapi.auth2.getAuthInstance();
                 auth2.signOut().then(function () {
-                    alert('here2');
                 console.log('User signed out.');
                 });
             }
@@ -20,7 +18,7 @@
     <tr>
         <td>
             <span style='align-self:left'>
-                <a href='/'>Home</a>
+                <a href='{{url_for("home")}}'>Home</a>
             </span>
             <span style='align-self:right'>
             {% if logged_in %}
@@ -28,7 +26,6 @@
                     <a href='{{url_for("fdisconnect")}}'>Logout</a>
                 {% elif provider == 'google' %}
                     <a href='{{url_for("gdisconnect")}}'>Logout</a>
-<!--                    <a href='#' onclick='signOut()'>Logout</a>-->
                 {% endif %}
             {% else %}
                 <a href='{{url_for("showLogin")}}'>Login</a>
